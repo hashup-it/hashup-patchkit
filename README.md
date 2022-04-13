@@ -1,3 +1,15 @@
-# hashup-patchkit
-1. See **pkWidget_server** - Backend
-2. Use **pkWidget** - UI
+## **./ui** - UI in React & Typescript
+
+### Run
+`$ cd ./ui`
+
+`$ npm run start`
+
+## **./server** - Backend in NodeJS & Typescript
+
+### Run
+`$ cd ./server`
+
+`$ npm run start`
+
+Setup .env file is required, see `./server/README.md`

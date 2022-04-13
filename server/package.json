@@ -1,5 +1,5 @@
 {
-  "name": "pkwidget-node-server",
+  "name": "hashup-patchkit-server",
   "version": "1.0.0",
   "description": "",
   "main": "main.ts",
@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "UNLICENSED",
   "dependencies": {
     "axios": "^0.26.1",
     "cors": "^2.8.5",

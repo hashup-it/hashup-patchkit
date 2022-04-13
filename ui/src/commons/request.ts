@@ -1,8 +1,10 @@
-import config from './config.js';
-import { decodePlatform } from './utils.js';
+import config from './config';
+import { decodePlatform } from './utils';
+import {WidgetData} from "../models/widgetData.interface";
+import {Callbacks} from "../models/callbacks.interface";
 
-export const sendRequest = ({ method, url, data = '', headers, async = true }, { success, error, progress } = {}) => {
-  return new Promise((resolve) => {
+export const sendRequest = ({ method, url, data = '', headers, async = true }: any, { success, error, progress }: Callbacks = {}) => {
+  return new Promise((resolve: any) => {
     if (method === 'GET') {
       if (typeof(data) === 'string') url += data;
       else if (typeof(data) === 'object') Object.keys(data).forEach((key, i) => url += `${i === 0 ? '?' : '&'}${key}=${data[key]}`);
@@ -12,42 +14,42 @@ export const sendRequest = ({ method, url, data = '', headers, async = true }, {
     const xhr = new XMLHttpRequest();
     xhr.open(method, url, async);
     headers && Object.keys(headers).forEach((key) => xhr.setRequestHeader(key, headers[key]));
-    
+
     xhr.addEventListener('load', () => {
       resolve(xhr.response);
       if (xhr.status >= 200 && xhr.status <= 299) success && success(xhr.response);
       else error && error(xhr.response)
     });
     xhr.addEventListener('error', () => {
-      resolve();
+      resolve(null);
       error && error(xhr.response)
     });
     xhr.upload.addEventListener('progress', (e) => progress && progress(e));
-    
+
     xhr.send(data);
-  }) 
+  })
 }
-export const requestUpload = (widgetData, callbacks) => {
+export const requestUpload = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${config.endpoint}/upload`,
     data: {
-      total_size_bytes: widgetData.archive.size,
+      total_size_bytes: widgetData.archive!.size,
     }
-  }, callbacks);
+  }, callbacks) as Promise<string>;
 }
 
-export const requestCreateApp = (widgetData, callbacks) => {
+export const requestCreateApp = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${config.endpoint}/createApp`,
     data: {
-      platform: decodePlatform(widgetData.platform),
+      platform: decodePlatform(widgetData.platform!),
     },
-  }, callbacks);
+  }, callbacks) as Promise<string>;
 }
 
-export const requestProcess = (widgetData, callbacks) => {
+export const requestProcess = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${config.endpoint}/process`,
@@ -56,10 +58,10 @@ export const requestProcess = (widgetData, callbacks) => {
       version_id: widgetData.versionId,
       upload_id: widgetData.uploadId
     },
-  }, callbacks);
+  }, callbacks) as Promise<string>;
 }
 
-export const requestProcessingStatus = (widgetData, callbacks) => {
+export const requestProcessingStatus = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${config.pkEndpoint}/background_jobs/${widgetData.jobId}`,
@@ -69,7 +71,7 @@ export const requestProcessingStatus = (widgetData, callbacks) => {
   }, callbacks);
 }
 
-export const requestPublish = (widgetData, callbacks) => {
+export const requestPublish = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${config.endpoint}/publish`,
@@ -79,7 +81,7 @@ export const requestPublish = (widgetData, callbacks) => {
   }, callbacks);
 }
 
-export const requestPublishingStatus = (widgetData, callbacks) => {
+export const requestPublishingStatus = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${config.pkEndpoint}/apps/${widgetData.appSecret}/versions/1`,
@@ -89,12 +91,12 @@ export const requestPublishingStatus = (widgetData, callbacks) => {
   }, callbacks);
 }
 
-export const requestFetchApp = (widgetData, callbacks) => {
+export const requestFetchApp = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${config.endpoint}/fetchApp`,
     data: {
       app_secret: widgetData.appSecret,
     }
-  }, callbacks);
+  }, callbacks) as Promise<string>;
 }
