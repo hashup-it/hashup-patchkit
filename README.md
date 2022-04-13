@@ -3,7 +3,7 @@
 ### Run
 `$ cd ./ui`
 
-`$ npm run start`
+`$ npm run serve`
 
 ## **./server** - Backend in NodeJS & Typescript
 
