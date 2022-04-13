@@ -1,13 +1,13 @@
 {
   "name": "hashup-game-uploader",
   "private": false,
-  "version": "0.1.15",
+  "version": "0.1.20",
   "description": "Hashup game uploader - web component - use it anywhere!",
-  "main": "dist/hashupGameUploader.js",
-  "module": "dist/hashupGameUploader.js",
+  "main": "dist/bundled.js",
+  "module": "dist/bundled.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && rollup -c --file dist/bundled.js",
     "build:watch": "tsc --watch",
     "clean": "rimraf my-element.{d.ts,d.ts.map,js,js.map} test/my-element.{d.ts,d.ts.map,js,js.map} test/my-element_test.{d.ts,d.ts.map,js,js.map}",
     "lint": "npm run lint:lit-analyzer && npm run lint:eslint",

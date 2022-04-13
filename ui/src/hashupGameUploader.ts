@@ -1,8 +1,6 @@
-
 import {LitElement, html, css, PropertyValues} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
-// import * as zip from "@zip.js/zip.js";
 import { requestUpload, requestCreateApp, requestProcess, requestProcessingStatus, requestPublish, requestPublishingStatus, requestFetchApp } from './commons/request';
 import { getEntriesFromZip, validateZip, recognizePlatform, setUploadData, chunkedFileUpload, bitSizeToMB } from './commons/utils';
 import {WidgetData} from "./models/widgetData.interface";
@@ -43,9 +41,6 @@ export class HashupGameUploader extends LitElement {
         this.widgetDiv.appendChild(fileInput);
         fileInput.setAttribute('type', 'file');
         fileInput.onchange = this.onFileChange;
-
-        // this.shadowRoot.querySelector('h3').innerText = this.getAttribute('name');
-        // this.shadowRoot.querySelector('img').src = this.getAttribute('avatar');
     }
 
     showProgress = () => {
