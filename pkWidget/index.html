@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pkWidget</title>
+
+  <style>
+    body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      background-color: #111;
+      color: #ddd;
+    }
+
+    #widget {
+      display: flex;
+      flex-direction: column;
+
+      font-family: 'Consolas';
+      font-size: 14px;
+    }
+    #widget .progress,
+    #widget .buttons {
+      display: flex;
+      flex-direction: column;
+    }
+    #widget .progress progress,
+    #widget .buttons button {
+      margin: 3px 0;
+    }
+  </style>
+
+  <script type="text/javascript" src="./lib/zip.min.js"></script>
+  <script type="module" src="./src/main.js" defer></script>
+</head>
+<body>
+  <div id="widget"></div>
+</body>
+</html>
