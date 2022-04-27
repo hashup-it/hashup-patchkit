@@ -1,4 +1,4 @@
-import * as zip from "@zip.js/zip.js";
+import { BlobReader, TextWriter, ZipReader } from "@zip.js/zip.js";
 import config from './config';
 import { sendRequest } from './request';
 import {Callbacks} from "../models/callbacks.interface";
@@ -16,8 +16,8 @@ const pkPlatform  = {
 export const decodePlatform = (platform: 'win32' | 'win64' | 'lin32' | 'lin64' | 'osx') => pkPlatform[platform];
 
 export const getEntriesFromZip = async (archive: any) => {
-  const blob = new zip.BlobReader(archive);
-  const reader = new zip.ZipReader(blob);
+  const blob = new BlobReader(archive);
+  const reader = new ZipReader(blob);
 
   let entries;
   try {
@@ -94,7 +94,7 @@ const _findExeArr = async (entries: any) => {
   if (!entries) return;
 
   const getBytesFromFile = async (entry: any, length: number) => {
-    const data = await entry.getData(new zip.TextWriter());
+    const data = await entry.getData(new TextWriter());
     return data.slice(0, length);
   }
   const hasAnyExtension = ({ filename }: any) => filename.split('/').pop().includes('.');

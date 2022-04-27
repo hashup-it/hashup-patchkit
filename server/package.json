@@ -8,8 +8,8 @@
     "deploy": "serverless deploy"
   },
   "keywords": [],
-  "author": "",
-  "license": "UNLICENSED",
+  "author": "Hashup.it on Patchkit codebase",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.26.1",
     "cors": "^2.8.5",
