@@ -13,7 +13,7 @@ export default {
   input: 'dist/hashupGameUploader.js',
   output: {
     file: 'hashupGameUploader.bundled.js',
-    format: 'esm',
+    format: 'cjs',
   },
   onwarn(warning) {
     if (warning.code !== 'THIS_IS_UNDEFINED') {

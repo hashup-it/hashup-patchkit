@@ -1,7 +1,7 @@
 {
   "name": "hashup-game-uploader",
   "private": false,
-  "version": "0.1.25",
+  "version": "0.1.26",
   "description": "Hashup game uploader - web component - use it anywhere!",
   "main": "dist/bundled.js",
   "module": "dist/hashupGameUploader.js",
