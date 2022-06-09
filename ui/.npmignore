@@ -1,5 +1,8 @@
 .*
-*
+docs
+docs-src
+node_modules
+src
 !/dist
 !README.md
 !package.json
