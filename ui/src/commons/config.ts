@@ -7,7 +7,7 @@ export default {
 
   // PRODUCTION environment
   pkEndpoint: 'https://api2.patchkit.net/1',
-  uploadEndpoint: 'https://api.patchkit.waw.pl/1',
+  uploadEndpoint: 'https://api.patchkit.net/1',
 
   maxFileSize: 1073741824 * 100, // 100 GiB
   exeSearchDepth: 2,
