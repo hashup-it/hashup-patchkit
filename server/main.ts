@@ -44,13 +44,41 @@ server.get('/upload', async (req: Request, res: Response) => {
 });
 
 server.get('/createApp', async (req: Request, res: Response) => {
+  const appName = `${req.query.name || ''}-${crypto.randomBytes(16).toString("hex")}`;
   const app = await axios.post(
     `${process.env.PK_ENDPOINT}/apps`,
     {
-      name: crypto.randomBytes(16).toString("hex"),
+      name: appName,
       platform: req.query.platform,
       api_key: process.env.API_KEY,
     }
+  );
+
+  // create appCatalogApp
+  const appCatalogApp = await axios.post(
+    `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps`,
+      {
+          name: appName,
+          display_name: appName
+      },
+    {
+        method: 'POST',
+        headers: {
+            'X-Api-Key': process.env.APPCATALOG_API_KEY,
+        }
+    }
+  );
+
+  // assign app to appCatalogApp
+  await axios.post(
+      `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps/${appCatalogApp.data.id}/patchkit_apps`,
+      `platform=${req.query.platform}&secret=${app.data.secret}`,
+      {
+          headers: {
+              method: 'POST',
+              'X-Api-Key': process.env.APPCATALOG_API_KEY,
+          }
+      }
   );
 
   const version = await axios.post(
@@ -62,6 +90,7 @@ server.get('/createApp', async (req: Request, res: Response) => {
   );
 
   res.send(JSON.stringify({
+    app_catalog_app_id: appCatalogApp.data.id,
     app_secret: app.data.secret,
     version_id: version.data.id,
   }));
@@ -103,6 +132,41 @@ server.get('/fetchApp', async (req: Request, res: Response) => {
   );
 
   res.send(JSON.stringify(app.data));
+});
+
+server.get('/metadata', async (req: Request, res: Response) => {
+   const tokenUpdate = await axios.post(
+        `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps/${req.query.appCatalogAppId}/custom_field_values`,
+        {
+            'custom_field_type_id': process.env.CUSTOM_FIELD_ICON_URL,
+            value: req.query.tokenId,
+        },
+        {
+            headers: {
+                method: 'POST',
+                'X-Api-Key': process.env.APPCATALOG_API_KEY,
+            }
+        }
+    );
+
+    const iconUpdate = await axios.post(
+        `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps/${req.query.appCatalogAppId}/custom_field_values`,
+        {
+            'custom_field_type_id': process.env.CUSTOM_FIELD_ICON_URL,
+            value: req.query.iconUrl,
+        },
+        {
+            headers: {
+                method: 'POST',
+                'X-Api-Key': process.env.APPCATALOG_API_KEY,
+            }
+        }
+    );
+
+    res.send(JSON.stringify({
+        tokenUpdate: tokenUpdate.data,
+        iconUpdate: iconUpdate.data,
+    }));
 });
 
 export const handler = ServerlessHttp(server);

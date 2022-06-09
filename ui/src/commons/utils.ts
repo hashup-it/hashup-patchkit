@@ -24,7 +24,6 @@ export const getEntriesFromZip = async (archive: any) => {
     entries = await reader.getEntries();
   } catch(err) {}
 
-  console.warn(entries)
   return entries;
 }
 

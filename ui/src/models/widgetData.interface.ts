@@ -1,4 +1,5 @@
 export interface WidgetData {
+    appCatalogAppId?: string;
     archive?: File;
     jwt?: string;
     jobId?: string;

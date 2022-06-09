@@ -39,11 +39,12 @@ export const requestUpload = (widgetData: WidgetData, callbacks?: Callbacks) => 
   }, callbacks) as Promise<string>;
 }
 
-export const requestCreateApp = (widgetData: WidgetData, callbacks?: Callbacks) => {
+export const requestCreateApp = ({ widgetData, appName }: { widgetData: WidgetData, appName: string }, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${config.endpoint}/createApp`,
     data: {
+      name: appName,
       platform: decodePlatform(widgetData.platform!),
     },
   }, callbacks) as Promise<string>;

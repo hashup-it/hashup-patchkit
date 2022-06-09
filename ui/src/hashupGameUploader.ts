@@ -1,5 +1,5 @@
 import {LitElement, html, css, PropertyValues} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
 
 import { requestUpload, requestCreateApp, requestProcess, requestProcessingStatus, requestPublish, requestPublishingStatus, requestFetchApp } from './commons/request';
 import { getEntriesFromZip, validateZip, recognizePlatform, setUploadData, chunkedFileUpload, bitSizeToMB } from './commons/utils';
@@ -16,6 +16,9 @@ const  widgetData: WidgetData = {
 
 @customElement('hashup-game-uploader')
 export class HashupGameUploader extends LitElement {
+    @property({type: String})
+    appName = '';
+
     static override styles = css`
     :host {
       display: block;
@@ -163,7 +166,7 @@ export class HashupGameUploader extends LitElement {
             console.log('OK');
 
             console.log('🔹Request createApp'); // *
-            const newApp = await requestCreateApp(widgetData, {
+            const newApp = await requestCreateApp({ widgetData, appName: this.appName }, {
                 error: () => console.warn('Error while creating the application')
             });
             if (!newApp) return;
@@ -202,7 +205,10 @@ export class HashupGameUploader extends LitElement {
             const appData = JSON.parse(app);
 
             const FileUploaded = new CustomEvent('file-uploaded', {
-                detail: appData,
+                detail: {
+                    ...appData,
+                    app_catalog_app_id: newAppData.app_catalog_app_id,
+                },
                 bubbles: true,
                 composed: true
             });

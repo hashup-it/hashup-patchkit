@@ -2,7 +2,7 @@
 
 ## Web-component usage
 ```
-<hashup-game-uploader></hashup-game-uploader>
+<hashup-game-uploader appName="Example app"></hashup-game-uploader>
 
 <script type="module" src="https://unpkg.com/hashup-game-uploader?module"></script>
 <script>
