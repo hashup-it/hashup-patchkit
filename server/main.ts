@@ -51,6 +51,7 @@ server.get('/createApp', async (req: Request, res: Response) => {
       name: appName,
       platform: req.query.platform,
       api_key: process.env.API_KEY,
+      authentication_method: 'token'
     }
   );
 
