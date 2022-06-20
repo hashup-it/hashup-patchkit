@@ -60,7 +60,7 @@ server.get('/createApp', async (req: Request, res: Response) => {
     `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps`,
       {
           name: appName,
-          display_name: appName
+          display_name: req.query.name
       },
     {
         method: 'POST',
