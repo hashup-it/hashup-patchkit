@@ -15,12 +15,7 @@ server.listen(process.env.PORT, () => {
 
 server.get('/upload', async (req: Request, res: Response) => {
   try {
-      console.warn(  `${process.env.PK_ENDPOINT}/uploads`,
-          {
-              total_size_bytes: req.query.total_size_bytes,
-              storage_type: 'local',
-              api_key: process.env.API_KEY,
-          })
+      console.warn('bbbb')
       const upload = await axios.post(
           `${process.env.PK_ENDPOINT}/uploads`,
           {
@@ -40,61 +35,75 @@ server.get('/upload', async (req: Request, res: Response) => {
       }));
   } catch (e) {
       console.warn(e);
+      res.send(JSON.stringify(e))
   }
 });
 
 server.get('/createApp', async (req: Request, res: Response) => {
-  const appName = `${req.query.name || ''}-${crypto.randomBytes(16).toString("hex")}`;
-  const app = await axios.post(
-    `${process.env.PK_ENDPOINT}/apps`,
-    {
-      name: appName,
-      platform: req.query.platform,
-      api_key: process.env.API_KEY,
-      authentication_method: 'token'
+    console.warn('open request')
+    try {
+        const appName = `${req.query.name || ''}-${crypto.randomBytes(16).toString("hex")}`;
+        const app = await axios.post(
+            `${process.env.PK_ENDPOINT}/apps`,
+            {
+                name: appName,
+                platform: req.query.platform,
+                api_key: process.env.API_KEY,
+                authentication_method: 'token',
+                // visibility: 'public',
+            },
+        );
+        console.warn('after create app', `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps`)
+
+        // create appCatalogApp
+        const appCatalogApp = await axios.post(
+            `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps`,
+            {
+                name: appName,
+                display_name: req.query.name,
+                visibility: 'public',
+            },
+            {
+                method: 'POST',
+                headers: {
+                    'X-Api-Key': process.env.APPCATALOG_API_KEY,
+                }
+            }
+        );
+        console.warn('after create app in catalog', `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps/${appCatalogApp.data.id}/patchkit_apps`,
+            `platform=${req.query.platform}&secret=${app.data.secret}`)
+
+        // assign app to appCatalogApp
+        await axios.post(
+            `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps/${appCatalogApp.data.id}/patchkit_apps`,
+            `platform=${req.query.platform}&secret=${app.data.secret}`,
+            {
+                headers: {
+                    method: 'POST',
+                    'X-Api-Key': process.env.APPCATALOG_API_KEY,
+                }
+            }
+        );
+        console.warn('after assign to app catalog')
+
+        const version = await axios.post(
+            `${process.env.PK_ENDPOINT}/apps/${app.data.secret}/versions`,
+            {
+                label: '1.0',
+                api_key: process.env.API_KEY,
+            }
+        );
+        console.warn('after version post')
+
+        res.send(JSON.stringify({
+            app_catalog_app_id: appCatalogApp.data.id,
+            app_secret: app.data.secret,
+            version_id: version.data.id,
+        }));
+    } catch (e) {
+        console.error(e);
+        res.send(JSON.stringify(e));
     }
-  );
-
-  // create appCatalogApp
-  const appCatalogApp = await axios.post(
-    `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps`,
-      {
-          name: appName,
-          display_name: req.query.name
-      },
-    {
-        method: 'POST',
-        headers: {
-            'X-Api-Key': process.env.APPCATALOG_API_KEY,
-        }
-    }
-  );
-
-  // assign app to appCatalogApp
-  await axios.post(
-      `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps/${appCatalogApp.data.id}/patchkit_apps`,
-      `platform=${req.query.platform}&secret=${app.data.secret}`,
-      {
-          headers: {
-              method: 'POST',
-              'X-Api-Key': process.env.APPCATALOG_API_KEY,
-          }
-      }
-  );
-
-  const version = await axios.post(
-    `${process.env.PK_ENDPOINT}/apps/${app.data.secret}/versions`,
-    {
-      label: '1.0',
-      api_key: process.env.API_KEY,
-    }
-  );
-
-  res.send(JSON.stringify({
-    app_catalog_app_id: appCatalogApp.data.id,
-    app_secret: app.data.secret,
-    version_id: version.data.id,
-  }));
 });
 
 server.get('/process', async (req: Request, res: Response) => {

@@ -73,6 +73,10 @@ export class HashupGameUploader extends LitElement {
         downloadButtonDiv.onclick = () => window.open(url);
     }
 
+    showSuccess = () => {
+        this.widgetDiv.innerHTML = 'Success!';
+    }
+
     // @ TODO type
     onFileChange = async (e: any) => {
         if (!e.target.files[0]) return;
@@ -83,8 +87,14 @@ export class HashupGameUploader extends LitElement {
         console.table(widgetData.archive);
 
         console.log('🔹Request upload'); // *
+        const loading = document.createElement('div');
+        loading.innerHTML = 'Loading...'
+        this.widgetDiv.appendChild(loading);
         const upload = await requestUpload(widgetData);
-        if (!upload) return;
+        if (!upload) {
+            loading.innerHTML = '';
+            return;
+        }
 
         const uploadData = JSON.parse(upload);
         console.table(uploadData);
@@ -100,6 +110,7 @@ export class HashupGameUploader extends LitElement {
             console.info('OK')
         } else {
             console.warn(errorMessage);
+            loading.innerHTML = '';
             return;
         }
 
@@ -214,8 +225,10 @@ export class HashupGameUploader extends LitElement {
             });
             this.dispatchEvent(FileUploaded);
 
-            console.log('🔹Show the download button'); // *
-            this.showDownload(appData.download_links.direct);
+            // console.log('🔹Show the download button'); // *
+            // this.showDownload(appData.download_links.direct);
+
+            this.showSuccess();
         }
 
         const monitorProcessing = () => {
