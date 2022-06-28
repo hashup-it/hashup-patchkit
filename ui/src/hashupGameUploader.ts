@@ -12,12 +12,25 @@ const  widgetData: WidgetData = {
     jwt: undefined,
     platform: undefined,
     appSecret: undefined,
+    endpoint: undefined,
+    appName: undefined,
+    iconUrl: undefined,
+    tokenId: undefined,
 };
 
 @customElement('hashup-game-uploader')
 export class HashupGameUploader extends LitElement {
     @property({type: String})
     appName = '';
+
+    @property({type: String})
+    tokenId = '';
+
+    @property({type: String})
+    iconUrl = '';
+
+    @property({type: String})
+    endpoint = '';
 
     static override styles = css`
     :host {
@@ -33,6 +46,13 @@ export class HashupGameUploader extends LitElement {
     }
 
     widgetDiv: any;
+
+    override updated() {
+        widgetData.iconUrl = this.iconUrl;
+        widgetData.appName = this.appName;
+        widgetData.tokenId = this.tokenId;
+        widgetData.endpoint = this.endpoint;
+    }
 
     protected override firstUpdated(_changedProperties: PropertyValues) {
         super.firstUpdated(_changedProperties);
@@ -93,7 +113,7 @@ export class HashupGameUploader extends LitElement {
         const upload = await requestUpload(widgetData);
         if (!upload) {
             loading.innerHTML = '';
-            return;
+            throw new Error('Error while uploading');
         }
 
         const uploadData = JSON.parse(upload);
@@ -109,15 +129,17 @@ export class HashupGameUploader extends LitElement {
         if (isValidated) {
             console.info('OK')
         } else {
-            console.warn(errorMessage);
-            loading.innerHTML = '';
-            return;
+            loading.innerHTML = 'Incorrect file! Please upload zip. For more information please contact administrator: hello@hashup.it';
+            console.error(errorMessage);
+            throw new Error('Incorrect file');
         }
 
         console.log('🔹Detect platforms and create an exe list'); // *
         const exeArr = await recognizePlatform(archiveEntries);
-        if (exeArr.length === 0) console.warn('No executable found in given archive');
-        if (!exeArr || exeArr.length === 0) return;
+        if (exeArr.length === 0) alert('No executable found in given archive.\nFor more info contact administrator: hello@hashup.it');
+        if (!exeArr || exeArr.length === 0) {
+            throw new Error('No executable found in given archive');
+        }
         console.table(exeArr);
 
         console.log('🔹Get platforms from the exe list'); // *
@@ -169,7 +191,10 @@ export class HashupGameUploader extends LitElement {
                     progressBarDiv.value = progressData.totalPercentComplete;
                 },
                 success: onFileUploaded,
-                error: (e: any) => console.error('Error while file uploading', e)
+                error: (e: any) => {
+                    console.error('Error while file uploading', e);
+                    throw new Error('Error while uploading');
+                }
             });
         }
 
@@ -177,10 +202,11 @@ export class HashupGameUploader extends LitElement {
             console.log('OK');
 
             console.log('🔹Request createApp'); // *
-            const newApp = await requestCreateApp({ widgetData, appName: this.appName }, {
-                error: () => console.warn('Error while creating the application')
+
+            const newApp = await requestCreateApp({ widgetData }, {
+                error: () => console.error('Error while creating the application')
             });
-            if (!newApp) return;
+            if (!newApp) throw new Error('Error while creating the application');
 
             const newAppData = JSON.parse(newApp);
             console.table(newAppData);
@@ -190,9 +216,9 @@ export class HashupGameUploader extends LitElement {
 
             console.log('🔹Start processing the file'); // *
             const process = await requestProcess(widgetData, {
-                error: () => console.warn('Cannot process the file')
+                error: () => console.error('Cannot process the file')
             });
-            if (!process) return;
+            if (!process) throw new Error('Cannot process the file');
 
             const processData = JSON.parse(process);
             console.table(processData);
@@ -203,15 +229,15 @@ export class HashupGameUploader extends LitElement {
 
             console.log('🔹Start publishing the application'); // *
             const publish = await requestPublish(widgetData, {
-                error: () => console.warn('Error while publishing')
+                error: () => console.error('Error while publishing')
             });
-            if (!publish) return;
+            if (!publish) throw new Error('Error while publishing');
 
             await monitorPublishing();
 
             console.log('🔹Fetch the app data to get the download link'); // *
             const app = await requestFetchApp(widgetData);
-            if (!app) return;
+            if (!app) throw new Error('Error while fetching app data');
 
             const appData = JSON.parse(app);
 
@@ -255,7 +281,10 @@ export class HashupGameUploader extends LitElement {
                                 resolve(null);
                             }
                         },
-                        error: () => console.warn('Error while requesting the processing status')
+                        error: () => {
+                            console.error('Error while requesting the processing status');
+                            throw new Error('Error while requesting the processing status');
+                        }
                     });
                 }, 1000);
             });
@@ -284,7 +313,10 @@ export class HashupGameUploader extends LitElement {
                                 resolve(null);
                             }
                         },
-                        error: () => console.warn('Error while requesting the processing status')
+                        error: () => {
+                            console.error('Error while requesting the publishing status');
+                            throw new Error('Error while requesting the publishing status');
+                        }
                     });
                 }, 1000);
             });

@@ -5,7 +5,8 @@
   "main": "main.ts",
   "scripts": {
     "start": "serverless offline start",
-    "deploy": "serverless deploy"
+    "deploy:prod": "serverless deploy -c serverless.yml",
+    "deploy:dev": "serverless deploy -c serverless.dev.yml"
   },
   "keywords": [],
   "author": "Hashup.it on Patchkit codebase",
@@ -14,6 +15,7 @@
     "axios": "^0.26.1",
     "cors": "^2.8.5",
     "express": "^4.17.3",
+    "moralis": "^1.8.0",
     "serverless": "^3.19.0",
     "serverless-http": "^3.0.1",
     "serverless-offline": "^8.8.0",

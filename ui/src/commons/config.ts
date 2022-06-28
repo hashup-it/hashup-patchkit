@@ -1,6 +1,4 @@
 export default {
-  endpoint: 'https://ogjpkjhe09.execute-api.eu-west-1.amazonaws.com/dev',
-
   // STAGING environment
   // pkEndpoint: 'https://staging-api.patchkit.net/1',
   // uploadEndpoint: 'https://staging.patchkit.waw.pl/1',

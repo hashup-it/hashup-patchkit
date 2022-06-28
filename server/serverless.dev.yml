@@ -2,6 +2,7 @@ service: hashup-patchkit
 
 frameworkVersion: '3'
 
+# The framework looks for .env and .env.{stage} files in service directory
 useDotenv: true
 
 custom:
@@ -17,7 +18,7 @@ plugins:
 provider:
   name: aws
   runtime: nodejs14.x
-  stage: prod
+  stage: dev
   region: eu-west-1
   timeout: 120
   memorySize: 4096
@@ -33,9 +34,6 @@ provider:
     APPCATALOG_CATALOG_ID: ${env:APPCATALOG_CATALOG_ID}
     CUSTOM_FIELD_TOKEN_ID: ${env:CUSTOM_FIELD_TOKEN_ID}
     CUSTOM_FIELD_ICON_URL: ${env:CUSTOM_FIELD_ICON_URL}
-    MORALIS_APP_ID: ${env:MORALIS_APP_ID}
-    MORALIS_SERVER_URL: ${env:MORALIS_SERVER_URL}
-    MORALIS_MASTER_KEY: ${env:MORALIS_MASTER_KEY}
 
 functions:
   app:

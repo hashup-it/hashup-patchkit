@@ -32,19 +32,21 @@ export const sendRequest = ({ method, url, data = '', headers, async = true }: a
 export const requestUpload = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
-    url: `${config.endpoint}/upload`,
+    url: `${widgetData.endpoint}/upload`,
     data: {
       total_size_bytes: widgetData.archive!.size,
     }
   }, callbacks) as Promise<string>;
 }
 
-export const requestCreateApp = ({ widgetData, appName }: { widgetData: WidgetData, appName: string }, callbacks?: Callbacks) => {
+export const requestCreateApp = ({ widgetData }: { widgetData: WidgetData }, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
-    url: `${config.endpoint}/createApp`,
+    url: `${widgetData.endpoint}/createApp`,
     data: {
-      name: appName,
+      appName: widgetData.appName,
+      iconUrl: widgetData.iconUrl,
+      tokenId: widgetData.tokenId,
       platform: decodePlatform(widgetData.platform!),
     },
   }, callbacks) as Promise<string>;
@@ -53,7 +55,7 @@ export const requestCreateApp = ({ widgetData, appName }: { widgetData: WidgetDa
 export const requestProcess = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
-    url: `${config.endpoint}/process`,
+    url: `${widgetData.endpoint}/process`,
     data: {
       app_secret: widgetData.appSecret,
       version_id: widgetData.versionId,
@@ -75,7 +77,7 @@ export const requestProcessingStatus = (widgetData: WidgetData, callbacks?: Call
 export const requestPublish = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
-    url: `${config.endpoint}/publish`,
+    url: `${widgetData.endpoint}/publish`,
     data: {
       app_secret: widgetData.appSecret,
     }
@@ -95,7 +97,7 @@ export const requestPublishingStatus = (widgetData: WidgetData, callbacks?: Call
 export const requestFetchApp = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
-    url: `${config.endpoint}/fetchApp`,
+    url: `${widgetData.endpoint}/fetchApp`,
     data: {
       app_secret: widgetData.appSecret,
     }

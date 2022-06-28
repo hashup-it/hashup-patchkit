@@ -1,6 +1,7 @@
 import 'source-map-support/register';
 import express, { Request, Response } from 'express';
 import axios from "axios";
+import Moralis from 'moralis/node';
 
 import * as ServerlessHttp from 'serverless-http';
 import * as cors from 'cors';
@@ -24,17 +25,21 @@ server.get('/upload', async (req: Request, res: Response) => {
               api_key: process.env.API_KEY,
           }
       );
+      console.warn('after upload');
       const token = await axios.post(
           `${process.env.PK_ENDPOINT}/uploads/${upload.data.id}/token`,
           { api_key: process.env.API_KEY }
       );
-
-      res.send(JSON.stringify({
+      console.warn('after token');
+      const data = {
           upload_id: upload.data.id,
           jwt: token.data.jwt
-      }));
+      };
+      console.warn(data);
+
+      res.send(JSON.stringify(data));
   } catch (e) {
-      console.warn(e);
+      console.error('error', e);
       res.send(JSON.stringify(e))
   }
 });
@@ -42,7 +47,8 @@ server.get('/upload', async (req: Request, res: Response) => {
 server.get('/createApp', async (req: Request, res: Response) => {
     console.warn('open request')
     try {
-        const appName = `${req.query.name || ''}-${crypto.randomBytes(16).toString("hex")}`;
+        const tokenId = req.query.tokenId.toLowerCase();
+        const appName = `${req.query.appName || ''}-${crypto.randomBytes(16).toString("hex")}`;
         const app = await axios.post(
             `${process.env.PK_ENDPOINT}/apps`,
             {
@@ -60,7 +66,7 @@ server.get('/createApp', async (req: Request, res: Response) => {
             `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps`,
             {
                 name: appName,
-                display_name: req.query.name,
+                display_name: req.query.appName,
                 visibility: 'public',
             },
             {
@@ -86,6 +92,38 @@ server.get('/createApp', async (req: Request, res: Response) => {
         );
         console.warn('after assign to app catalog')
 
+        // add tokenId to metadata
+        await axios.post(
+            `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps/${appCatalogApp.data.id}/custom_field_values`,
+            {
+                'custom_field_type_id': process.env.CUSTOM_FIELD_TOKEN_ID,
+                value: tokenId,
+            },
+            {
+                headers: {
+                    method: 'POST',
+                    'X-Api-Key': process.env.APPCATALOG_API_KEY,
+                }
+            }
+        );
+        console.warn('after token metadata update')
+
+        // add iconUrl to metadata
+        await axios.post(
+            `${process.env.APPCATALOG_PK_ENDPOINT}/catalogs/${process.env.APPCATALOG_CATALOG_ID}/apps/${appCatalogApp.data.id}/custom_field_values`,
+            {
+                'custom_field_type_id': process.env.CUSTOM_FIELD_ICON_URL,
+                value: req.query.iconUrl,
+            },
+            {
+                headers: {
+                    method: 'POST',
+                    'X-Api-Key': process.env.APPCATALOG_API_KEY,
+                }
+            }
+        );
+        console.warn('after icon url metadata update')
+
         const version = await axios.post(
             `${process.env.PK_ENDPOINT}/apps/${app.data.secret}/versions`,
             {
@@ -94,6 +132,12 @@ server.get('/createApp', async (req: Request, res: Response) => {
             }
         );
         console.warn('after version post')
+
+        await Moralis.start({ serverUrl: process.env.MORALIS_SERVER_URL, appId: process.env.MORALIS_APP_ID, masterKey: process.env.MORALIS_MASTER_KEY });
+        console.warn('after init moralis')
+
+        await Moralis.Cloud.run("updatePatchkitAppId", { tokenId, appId: appCatalogApp.data.id }, { useMasterKey: true })
+        console.warn('after update patchkit app id')
 
         res.send(JSON.stringify({
             app_catalog_app_id: appCatalogApp.data.id,
