@@ -47,6 +47,11 @@ server.get('/upload', async (req: Request, res: Response) => {
 server.get('/createApp', async (req: Request, res: Response) => {
     console.warn('open request')
     try {
+        await Moralis.start({ serverUrl: process.env.MORALIS_SERVER_URL, appId: process.env.MORALIS_APP_ID, masterKey: process.env.MORALIS_MASTER_KEY });
+        console.warn('after init moralis')
+
+
+
         const tokenId = req.query.tokenId.toLowerCase();
         const appName = `${req.query.appName || ''}-${crypto.randomBytes(16).toString("hex")}`;
         const app = await axios.post(
@@ -133,20 +138,74 @@ server.get('/createApp', async (req: Request, res: Response) => {
         );
         console.warn('after version post')
 
-        await Moralis.start({ serverUrl: process.env.MORALIS_SERVER_URL, appId: process.env.MORALIS_APP_ID, masterKey: process.env.MORALIS_MASTER_KEY });
-        console.warn('after init moralis')
-
-        await Moralis.Cloud.run("updatePatchkitAppId", { tokenId, appId: appCatalogApp.data.id }, { useMasterKey: true })
+        await Moralis.Cloud.run("updatePatchkitAppId", { tokenId, appId: app.data.secret }, { useMasterKey: true })
         console.warn('after update patchkit app id')
 
         res.send(JSON.stringify({
-            app_catalog_app_id: appCatalogApp.data.id,
             app_secret: app.data.secret,
             version_id: version.data.id,
         }));
     } catch (e) {
         console.error(e);
         res.send(JSON.stringify(e));
+    }
+});
+
+const requestDraft = async ({ app_secret }) => {
+    try {
+        return await axios.get(
+            `${process.env.PK_ENDPOINT}/apps/${app_secret}/versions/draft?api_key=${process.env.API_KEY}`,
+            {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
+                },
+            }
+        );
+    } catch (e) {
+        console.error(e);
+        return e.response;
+    }
+}
+
+server.get('/updateapp', async (req: Request, res: Response) => {
+    const lastPublishedVersion = await axios.get(
+        `${process.env.PK_ENDPOINT}/apps/${req.query.app_secret}/versions/latest?api_key=${process.env.API_KEY}`,
+        {
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },
+        }
+    );
+
+    const draft = await requestDraft({ app_secret: req.query.app_secret });
+
+    console.warn('updateApp: after get', lastPublishedVersion, draft)
+
+    if (draft.status === 200) {
+        res.send(JSON.stringify({
+            app_secret: req.query.app_secret,
+            version_id: draft.data.id,
+        }));
+    } else {
+        const newVersion = +lastPublishedVersion.data.id + 1;
+
+        const version = await axios.post(
+            `${process.env.PK_ENDPOINT}/apps/${req.query.app_secret}/versions`,
+            {
+                label: `${newVersion}.0`,
+                api_key: process.env.API_KEY,
+            }
+        );
+        console.warn('updateApp: after create version', version, newVersion)
+
+        res.send(JSON.stringify({
+            app_secret: req.query.app_secret,
+            version_id: version.data.id,
+        }));
     }
 });
 
@@ -164,7 +223,7 @@ server.get('/process', async (req: Request, res: Response) => {
 
 server.get('/publish', async (req: Request, res: Response) => {
   const publish = await axios.post(
-    `${process.env.PK_ENDPOINT}/apps/${req.query.app_secret}/versions/1/publish`,
+    `${process.env.PK_ENDPOINT}/apps/${req.query.app_secret}/versions/${req.query.version_id || '1'}/publish`,
     {
       api_key: process.env.API_KEY,
     }

@@ -5,6 +5,7 @@
   "main": "main.ts",
   "scripts": {
     "start": "serverless offline start",
+    "deploy": "npm run deploy:prod",
     "deploy:prod": "serverless deploy -c serverless.yml",
     "deploy:dev": "serverless deploy -c serverless.dev.yml"
   },

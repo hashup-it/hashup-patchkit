@@ -1,7 +1,16 @@
 import {LitElement, html, css, PropertyValues} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-import { requestUpload, requestCreateApp, requestProcess, requestProcessingStatus, requestPublish, requestPublishingStatus, requestFetchApp } from './commons/request';
+import {
+    requestUpload,
+    requestCreateApp,
+    requestProcess,
+    requestProcessingStatus,
+    requestPublish,
+    requestPublishingStatus,
+    requestFetchApp,
+    requestUpdateApp
+} from './commons/request';
 import { getEntriesFromZip, validateZip, recognizePlatform, setUploadData, chunkedFileUpload, bitSizeToMB } from './commons/utils';
 import {WidgetData} from "./models/widgetData.interface";
 import {ProgressData} from "./models/progressData.interface";
@@ -27,6 +36,9 @@ export class HashupGameUploader extends LitElement {
     tokenId = '';
 
     @property({type: String})
+    appSecret = '';
+
+    @property({type: String})
     iconUrl = '';
 
     @property({type: String})
@@ -50,6 +62,7 @@ export class HashupGameUploader extends LitElement {
     override updated() {
         widgetData.iconUrl = this.iconUrl;
         widgetData.appName = this.appName;
+        widgetData.appSecret = this.appSecret;
         widgetData.tokenId = this.tokenId;
         widgetData.endpoint = this.endpoint;
     }
@@ -198,21 +211,31 @@ export class HashupGameUploader extends LitElement {
             });
         }
 
+        const createNewApp = async () => {
+            const versionData = await requestCreateApp({ widgetData }, {
+                error: () => console.error('Error while creating the application')
+            });
+            if (!versionData) throw new Error('Error while creating the application');
+            return JSON.parse(versionData);
+        }
+
+        const updateExistingAppVersion = async () => {
+            const versionData = await requestUpdateApp({ widgetData }, {
+                error: () => console.error('Error while creating the application')
+            });
+            if (!versionData) throw new Error('Error while creating the application');
+            return JSON.parse(versionData);
+        }
+
         const onFileUploaded = async () => {
             console.log('OK');
 
             console.log('🔹Request createApp'); // *
 
-            const newApp = await requestCreateApp({ widgetData }, {
-                error: () => console.error('Error while creating the application')
-            });
-            if (!newApp) throw new Error('Error while creating the application');
+            const versionData = widgetData.appSecret ? await updateExistingAppVersion() : await createNewApp();
 
-            const newAppData = JSON.parse(newApp);
-            console.table(newAppData);
-
-            widgetData.appSecret = newAppData.app_secret;
-            widgetData.versionId = newAppData.version_id;
+            widgetData.appSecret = versionData.app_secret;
+            widgetData.versionId = versionData.version_id;
 
             console.log('🔹Start processing the file'); // *
             const process = await requestProcess(widgetData, {
@@ -244,7 +267,6 @@ export class HashupGameUploader extends LitElement {
             const FileUploaded = new CustomEvent('file-uploaded', {
                 detail: {
                     ...appData,
-                    app_catalog_app_id: newAppData.app_catalog_app_id,
                 },
                 bubbles: true,
                 composed: true

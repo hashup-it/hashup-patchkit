@@ -52,6 +52,16 @@ export const requestCreateApp = ({ widgetData }: { widgetData: WidgetData }, cal
   }, callbacks) as Promise<string>;
 }
 
+export const requestUpdateApp = ({ widgetData }: { widgetData: WidgetData }, callbacks?: Callbacks) => {
+  return sendRequest({
+    method: 'GET',
+    url: `${widgetData.endpoint}/updateApp`,
+    data: {
+      app_secret: widgetData.appSecret,
+    },
+  }, callbacks) as Promise<string>;
+}
+
 export const requestProcess = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
@@ -80,6 +90,7 @@ export const requestPublish = (widgetData: WidgetData, callbacks?: Callbacks) =>
     url: `${widgetData.endpoint}/publish`,
     data: {
       app_secret: widgetData.appSecret,
+      version_id: widgetData.versionId,
     }
   }, callbacks);
 }
