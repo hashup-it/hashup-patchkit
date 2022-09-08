@@ -39,6 +39,13 @@ export const requestUpload = (widgetData: WidgetData, callbacks?: Callbacks) => 
   }, callbacks) as Promise<string>;
 }
 
+export const requestPatchkitApps = (widgetData: WidgetData, callbacks?: Callbacks) => {
+  return sendRequest({
+    method: 'GET',
+    url: `${config.appCatalogPkEndpoint}/catalogs/${config.appCatalogId}/apps/${widgetData.appCatalogAppId}/patchkit_apps`,
+  }, callbacks) as Promise<string>;
+}
+
 export const requestCreateApp = ({ widgetData }: { widgetData: WidgetData }, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
@@ -52,7 +59,7 @@ export const requestCreateApp = ({ widgetData }: { widgetData: WidgetData }, cal
   }, callbacks) as Promise<string>;
 }
 
-export const requestUpdateApp = ({ widgetData }: { widgetData: WidgetData }, callbacks?: Callbacks) => {
+export const requestUpdateApp = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${widgetData.endpoint}/updateApp`,

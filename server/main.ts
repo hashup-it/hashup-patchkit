@@ -50,8 +50,6 @@ server.get('/createApp', async (req: Request, res: Response) => {
         await Moralis.start({ serverUrl: process.env.MORALIS_SERVER_URL, appId: process.env.MORALIS_APP_ID, masterKey: process.env.MORALIS_MASTER_KEY });
         console.warn('after init moralis')
 
-
-
         const tokenId = req.query.tokenId.toLowerCase();
         const appName = `${req.query.appName || ''}-${crypto.randomBytes(16).toString("hex")}`;
         const app = await axios.post(
@@ -129,6 +127,7 @@ server.get('/createApp', async (req: Request, res: Response) => {
         );
         console.warn('after icon url metadata update')
 
+        // create version
         const version = await axios.post(
             `${process.env.PK_ENDPOINT}/apps/${app.data.secret}/versions`,
             {

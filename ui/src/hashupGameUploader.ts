@@ -9,9 +9,17 @@ import {
     requestPublish,
     requestPublishingStatus,
     requestFetchApp,
-    requestUpdateApp
+    requestUpdateApp, requestPatchkitApps
 } from './commons/request';
-import { getEntriesFromZip, validateZip, recognizePlatform, setUploadData, chunkedFileUpload, bitSizeToMB } from './commons/utils';
+import {
+    getEntriesFromZip,
+    validateZip,
+    recognizePlatform,
+    setUploadData,
+    chunkedFileUpload,
+    bitSizeToMB,
+    decodePlatform
+} from './commons/utils';
 import {WidgetData} from "./models/widgetData.interface";
 import {ProgressData} from "./models/progressData.interface";
 
@@ -36,7 +44,7 @@ export class HashupGameUploader extends LitElement {
     tokenId = '';
 
     @property({type: String})
-    appSecret = '';
+    appCatalogAppId = '';
 
     @property({type: String})
     iconUrl = '';
@@ -62,7 +70,7 @@ export class HashupGameUploader extends LitElement {
     override updated() {
         widgetData.iconUrl = this.iconUrl;
         widgetData.appName = this.appName;
-        widgetData.appSecret = this.appSecret;
+        widgetData.appCatalogAppId = this.appCatalogAppId;
         widgetData.tokenId = this.tokenId;
         widgetData.endpoint = this.endpoint;
     }
@@ -219,8 +227,18 @@ export class HashupGameUploader extends LitElement {
             return JSON.parse(versionData);
         }
 
+        const retrieveSecretKey = async () => {
+            const patchkitAppsBody = await requestPatchkitApps(widgetData);
+            const patchkitAppsData = JSON.parse(patchkitAppsBody);
+            const { patchkit_apps: patchkitApps} = patchkitAppsData;
+            const patchkitApp = patchkitApps.find(({ platform }: any) => platform === decodePlatform(widgetData.platform!));
+            console.log(patchkitApp);
+            return patchkitApp?.secret || false;
+        }
+
         const updateExistingAppVersion = async () => {
-            const versionData = await requestUpdateApp({ widgetData }, {
+            widgetData.appSecret = await retrieveSecretKey();
+            const versionData = await requestUpdateApp(widgetData, {
                 error: () => console.error('Error while creating the application')
             });
             if (!versionData) throw new Error('Error while creating the application');
@@ -232,7 +250,7 @@ export class HashupGameUploader extends LitElement {
 
             console.log('🔹Request createApp'); // *
 
-            const versionData = widgetData.appSecret ? await updateExistingAppVersion() : await createNewApp();
+            const versionData = widgetData.appCatalogAppId ? await updateExistingAppVersion() : await createNewApp();
 
             widgetData.appSecret = versionData.app_secret;
             widgetData.versionId = versionData.version_id;
