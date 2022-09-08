@@ -219,25 +219,24 @@ export class HashupGameUploader extends LitElement {
             });
         }
 
-        const createNewApp = async () => {
-            const versionData = await requestCreateApp({ widgetData }, {
+        const initializeAppWithFirstVersion = async () => {
+            const versionData = await requestCreateApp(widgetData, {
                 error: () => console.error('Error while creating the application')
             });
             if (!versionData) throw new Error('Error while creating the application');
             return JSON.parse(versionData);
         }
 
-        const retrieveSecretKey = async () => {
+        const retrieveAppSecretKey = async () => {
             const patchkitAppsBody = await requestPatchkitApps(widgetData);
             const patchkitAppsData = JSON.parse(patchkitAppsBody);
             const { patchkit_apps: patchkitApps} = patchkitAppsData;
             const patchkitApp = patchkitApps.find(({ platform }: any) => platform === decodePlatform(widgetData.platform!));
-            console.log(patchkitApp);
-            return patchkitApp?.secret || false;
+            console.log('platform: ', patchkitApp);
+            return patchkitApp?.secret || null;
         }
 
         const updateExistingAppVersion = async () => {
-            widgetData.appSecret = await retrieveSecretKey();
             const versionData = await requestUpdateApp(widgetData, {
                 error: () => console.error('Error while creating the application')
             });
@@ -250,10 +249,12 @@ export class HashupGameUploader extends LitElement {
 
             console.log('🔹Request createApp'); // *
 
-            const versionData = widgetData.appCatalogAppId ? await updateExistingAppVersion() : await createNewApp();
+            widgetData.appSecret = widgetData.appCatalogAppId ? await retrieveAppSecretKey() : null;
+            const { app_secret, version_id, app_catalog_app_id } = widgetData.appSecret ? await updateExistingAppVersion() : await initializeAppWithFirstVersion();
 
-            widgetData.appSecret = versionData.app_secret;
-            widgetData.versionId = versionData.version_id;
+            widgetData.appSecret = app_secret;
+            widgetData.versionId = version_id;
+            widgetData.appCatalogAppId = app_catalog_app_id;
 
             console.log('🔹Start processing the file'); // *
             const process = await requestProcess(widgetData, {

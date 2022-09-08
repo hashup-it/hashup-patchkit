@@ -46,14 +46,15 @@ export const requestPatchkitApps = (widgetData: WidgetData, callbacks?: Callback
   }, callbacks) as Promise<string>;
 }
 
-export const requestCreateApp = ({ widgetData }: { widgetData: WidgetData }, callbacks?: Callbacks) => {
+export const requestCreateApp = (widgetData: WidgetData, callbacks?: Callbacks) => {
   return sendRequest({
     method: 'GET',
     url: `${widgetData.endpoint}/createApp`,
     data: {
-      appName: widgetData.appName,
-      iconUrl: widgetData.iconUrl,
-      tokenId: widgetData.tokenId,
+      app_catalog_app_id: widgetData.appCatalogAppId,
+      app_name: widgetData.appName,
+      icon_url: widgetData.iconUrl,
+      token_id: widgetData.tokenId,
       platform: decodePlatform(widgetData.platform!),
     },
   }, callbacks) as Promise<string>;
@@ -64,6 +65,7 @@ export const requestUpdateApp = (widgetData: WidgetData, callbacks?: Callbacks) 
     method: 'GET',
     url: `${widgetData.endpoint}/updateApp`,
     data: {
+      app_catalog_app_id: widgetData.appCatalogAppId,
       app_secret: widgetData.appSecret,
     },
   }, callbacks) as Promise<string>;
