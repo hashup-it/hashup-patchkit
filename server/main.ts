@@ -17,7 +17,7 @@ server.listen(process.env.PORT, () => {
 
 server.get('/upload', async (req: Request, res: Response) => {
   try {
-      console.warn('bbbb')
+      console.warn('upload started')
       const upload = await axios.post(
           `${process.env.PK_ENDPOINT}/uploads`,
           {
