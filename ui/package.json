@@ -1,7 +1,7 @@
 {
   "name": "hashup-game-uploader",
   "private": false,
-  "version": "0.1.53",
+  "version": "0.1.54",
   "description": "Hashup game uploader - web component - use it anywhere!",
   "main": "dist/hashupGameUploader.js",
   "module": "dist/bundled.js",
@@ -45,7 +45,7 @@
   "dependencies": {
     "@web/dev-server": "^0.1.32",
     "@web/dev-server-legacy": "^1.0.0",
-    "@zip.js/zip.js": "^2.4.10",
+    "@zip.js/zip.js": "2.4.10",
     "lit": "^2.2.2",
     "ts-loader": "^9.2.9",
     "webpack": "^5.72.0"
