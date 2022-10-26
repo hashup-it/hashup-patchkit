@@ -33,6 +33,8 @@ const  widgetData: WidgetData = {
     appName: undefined,
     iconUrl: undefined,
     tokenId: undefined,
+    authSignature: undefined,
+    authMessage: undefined,
 };
 
 @customElement('hashup-game-uploader')
@@ -51,6 +53,12 @@ export class HashupGameUploader extends LitElement {
 
     @property({type: String})
     endpoint = '';
+
+    @property({type: String})
+    authMessage = ''
+
+    @property({type: String})
+    authSignature = ''
 
     static override styles = css`
     :host {
@@ -73,6 +81,8 @@ export class HashupGameUploader extends LitElement {
         widgetData.appCatalogAppId = this.appCatalogAppId;
         widgetData.tokenId = this.tokenId;
         widgetData.endpoint = this.endpoint;
+        widgetData.authMessage = this.authMessage;
+        widgetData.authSignature = this.authSignature;
     }
 
     protected override firstUpdated(_changedProperties: PropertyValues) {

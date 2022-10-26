@@ -11,4 +11,6 @@ export interface WidgetData {
     appName?: string;
     iconUrl?: string;
     tokenId?: string;
+    authSignature?: string;
+    authMessage?: string;
 }

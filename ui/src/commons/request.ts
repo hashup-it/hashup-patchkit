@@ -56,6 +56,8 @@ export const requestCreateApp = (widgetData: WidgetData, callbacks?: Callbacks) 
       icon_url: widgetData.iconUrl,
       token_id: widgetData.tokenId,
       platform: decodePlatform(widgetData.platform!),
+      auth_message: widgetData.authMessage,
+      auth_signature: widgetData.authSignature,
     },
   }, callbacks) as Promise<string>;
 }
@@ -67,6 +69,8 @@ export const requestUpdateApp = (widgetData: WidgetData, callbacks?: Callbacks) 
     data: {
       app_catalog_app_id: widgetData.appCatalogAppId,
       app_secret: widgetData.appSecret,
+      auth_message: widgetData.authMessage,
+      auth_signature: widgetData.authSignature,
     },
   }, callbacks) as Promise<string>;
 }
@@ -78,7 +82,8 @@ export const requestProcess = (widgetData: WidgetData, callbacks?: Callbacks) =>
     data: {
       app_secret: widgetData.appSecret,
       version_id: widgetData.versionId,
-      upload_id: widgetData.uploadId
+      upload_id: widgetData.uploadId,
+      // moralis_eth: widgetData.moralisEth,
     },
   }, callbacks) as Promise<string>;
 }
@@ -100,6 +105,7 @@ export const requestPublish = (widgetData: WidgetData, callbacks?: Callbacks) =>
     data: {
       app_secret: widgetData.appSecret,
       version_id: widgetData.versionId,
+      // moralis_eth: widgetData.moralisEth,
     }
   }, callbacks);
 }

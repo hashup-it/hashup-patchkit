@@ -6,6 +6,7 @@ import Moralis from 'moralis/node';
 import * as ServerlessHttp from 'serverless-http';
 import * as cors from 'cors';
 import * as crypto from "crypto";
+import {ethers} from "ethers";
 
 const server = express();
 server.use(cors());
@@ -45,9 +46,20 @@ server.get('/upload', async (req: Request, res: Response) => {
 });
 
 server.get('/createApp', async (req: Request, res: Response) => {
-    console.warn('open request')
+    const tokenId = req.query.token_id.toLowerCase();
+    const verifySigner = ethers.utils.recoverAddress(req.query.auth_message, req.query.auth_signature);
+
+    await Moralis.start({ serverUrl: process.env.MORALIS_SERVER_URL, appId: process.env.MORALIS_APP_ID, masterKey: process.env.MORALIS_MASTER_KEY });
+    const query = new Moralis.Query("Games");
+    query.equalTo("address", tokenId);
+    const results = await query.find();
+    console.warn(results[0].get('creator'), verifySigner.toLowerCase());
+
+    if (results[0].get('creator') !== verifySigner.toLowerCase()) {
+        res.send(JSON.stringify('Not permitted!'));
+    }
+
     try {
-        const tokenId = req.query.token_id.toLowerCase();
         const appName = `${req.query.app_name || ''}-${crypto.randomBytes(16).toString("hex")}`;
 
         await Moralis.start({ serverUrl: process.env.MORALIS_SERVER_URL, appId: process.env.MORALIS_APP_ID, masterKey: process.env.MORALIS_MASTER_KEY });
@@ -175,6 +187,17 @@ const requestDraft = async ({ app_secret }) => {
 }
 
 server.get('/updateapp', async (req: Request, res: Response) => {
+    const verifySigner = ethers.utils.recoverAddress(req.query.auth_message, req.query.auth_signature);
+
+    await Moralis.start({ serverUrl: process.env.MORALIS_SERVER_URL, appId: process.env.MORALIS_APP_ID, masterKey: process.env.MORALIS_MASTER_KEY });
+    const query = new Moralis.Query("Games");
+    query.equalTo("patchkitAppId", req.query.app_catalog_app_id)
+    const results = await query.find();
+
+    if (results[0].get('creator') !== verifySigner.toLowerCase()) {
+        res.send(JSON.stringify('Not permitted!'));
+    }
+
     const lastPublishedVersion = await axios.get(
         `${process.env.PK_ENDPOINT}/apps/${req.query.app_secret}/versions/latest?api_key=${process.env.API_KEY}`,
         {
